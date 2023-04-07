@@ -36,32 +36,15 @@ public abstract class BluetoothConnection
     // @TODO . `connect` other methods than `createRfcommSocketToServiceRecord`, including hidden one raw `createRfcommSocket` (on channel).
     // @TODO ? how about turning it into factoried?
     /// Connects to given device by hardware address
-    public void connect(String address, UUID uuid) throws IOException {
-        if (isConnected()) {
-            throw new IOException("already connected");
-        }
-
-        BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
-        if (device == null) {
-            throw new IOException("device not found");
-        }
-
-        BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuid); // @TODO . introduce ConnectionMethod
-        if (socket == null) {
-            throw new IOException("socket connection not established");
-        }
-
-        // Cancel discovery, even though we didn't start it
-        bluetoothAdapter.cancelDiscovery();
-
-        socket.connect();
-
-        connectionThread = new ConnectionThread(socket);
-        connectionThread.start();
+    public void connect(String address) throws IOException {
+        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothDevice device = btAdapter.getRemoteDevice(address);
+        ParcelUuid[] uuids = (ParcelUuid[]) device.getUuids();
+        connect(address, uuids[0].getUuid());
     }
     /// Connects to given device by hardware address (default UUID used)
     public void connect(String address) throws IOException {
-        connect(address, DEFAULT_UUID);
+        connect(address);
     }
     
     /// Disconnects current session (ignore if not connected)
